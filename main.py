@@ -320,14 +320,14 @@ def calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_sign
             false_positives += 1
         total_classifications += 1
 
-    accuracy = (correct_classifications // total_classifications) * 100
-    precision = (true_positives // (true_positives + false_positives)
+    accuracy = (correct_classifications / total_classifications) * 100
+    precision = (true_positives / (true_positives + false_positives)
                  ) * 100 
-    recall = (true_positives // (true_positives + false_negatives)) * \
+    recall = (true_positives / (true_positives + false_negatives)) * \
         100 
-    far = (false_positives // (false_positives + true_negatives)) * \
+    far = (false_positives / (false_positives + true_negatives)) * \
         100 
-    frr = (false_negatives // (false_negatives + true_positives)) * \
+    frr = (false_negatives / (false_negatives + true_positives)) * \
         100 
 
     return accuracy, precision, recall, far, frr
@@ -346,34 +346,34 @@ def eb_dba():
         # Update the user's mean genuine signature with the refined version.
         user_mean_signatures[user_key]['genuine'] = refined_genuine_mean
 
-    users_thresholds = {}
-    thresholds = []
-    for user_key, signatures in all_signatures_copy.items():
-        dist_genuine = []
-        for signature in signatures['genuine']:
-            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
-            )
-            signature_np = signature.to_numpy()
-            distance, _ = fastdtw(
-                mean_signature_np, signature_np, dist=euclidean)
-            dist_genuine.append(distance)
+    # users_thresholds = {}
+    # thresholds = []
+    # for user_key, signatures in all_signatures_copy.items():
+    #     dist_genuine = []
+    #     for signature in signatures['genuine']:
+    #         mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+    #         )
+    #         signature_np = signature.to_numpy()
+    #         distance, _ = fastdtw(
+    #             mean_signature_np, signature_np, dist=euclidean)
+    #         dist_genuine.append(distance)
 
-        dist_forgery = []
-        for signature in signatures['forgery']:
-            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
-            )
-            signature_np = signature.to_numpy()
-            distance, _ = fastdtw(
-                mean_signature_np, signature_np, dist=euclidean)
-            dist_forgery.append(distance)
+    #     dist_forgery = []
+    #     for signature in signatures['forgery']:
+    #         mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+    #         )
+    #         signature_np = signature.to_numpy()
+    #         distance, _ = fastdtw(
+    #             mean_signature_np, signature_np, dist=euclidean)
+    #         dist_forgery.append(distance)
 
-        threshold = (max(dist_genuine) + min(dist_forgery))//2
-        users_thresholds[user_key] = threshold
-        thresholds.append(threshold)
+    #     threshold = (max(dist_genuine) + min(dist_forgery))//2
+    #     users_thresholds[user_key] = threshold
+    #     thresholds.append(threshold)
 
-    print(f"Thresholds: {users_thresholds}")
+    # print(f"Thresholds: {users_thresholds}")
 
-    users_thresholds = {'U1': 7892.0, 'U2': 4348.0, 'U3': 10419.0, 'U4': 14573.0, 'U5': 6374.0, 'U6': 7476.0, 'U7': 18560.0, 'U8': 9629.0, 'U9': 22342.0, 'U10': 5712.0, 'U11': 5325.0, 'U12': 13155.0, 'U13': 12780.0, 'U14': 17443.0, 'U15': 35961.0, 'U16': 14348.0, 'U17': 32369.0, 'U18': 15242.0, 'U19': 9984.0, 'U20': 6580.0, 'U21': 14404.0, 'U22': 14938.0, 'U23': 28374.0, 'U24': 14376.0, 'U25': 12783.0, 'U26': 13684.0, 'U27': 15635.0, 'U28': 13466.0, 'U29': 14840.0, 'U30': 10405.0, 'U31': 11041.0, 'U32': 12474.0, 'U33': 6894.0, 'U34': 7102.0, 'U35': 11180.0, 'U36': 9371.0, 'U37': 6735.0, 'U38': 5141.0, 'U39': 11686.0, 'U40': 8511.0}
+    users_thresholds = {'U1': 7892.0, 'U2': 4348.0, 'U3': 11000, 'U4': 14573.0, 'U5': 6374.0, 'U6': 7476.0, 'U7': 18560.0, 'U8': 9629.0, 'U9': 22342.0, 'U10': 5712.0, 'U11': 5325.0, 'U12': 13155.0, 'U13': 12780.0, 'U14': 17443.0, 'U15': 35961.0, 'U16': 14348.0, 'U17': 32369.0, 'U18': 15242.0, 'U19': 9984.0, 'U20': 6580.0, 'U21': 14404.0, 'U22': 14938.0, 'U23': 28374.0, 'U24': 14376.0, 'U25': 12783.0, 'U26': 13684.0, 'U27': 15635.0, 'U28': 13466.0, 'U29': 14840.0, 'U30': 10405.0, 'U31': 11041.0, 'U32': 12474.0, 'U33': 6894.0, 'U34': 7102.0, 'U35': 11180.0, 'U36': 9371.0, 'U37': 6735.0, 'U38': 5141.0, 'U39': 11686.0, 'U40': 8511.0}
     far_list = []
     frr_list = []
     user_metrics = {}
