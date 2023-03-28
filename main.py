@@ -8,7 +8,6 @@ import copy
 import matplotlib.pyplot as plt
 
 
-
 # def read_signature_file(file_path):
 #     """
 #     Reads a single signature file, normalizes the X and Y coordinates, and returns its contents as a pandas DataFrame.
@@ -102,12 +101,17 @@ def read_signature_file(file_path):
     small_constant = 1e-9
     # Calculate Path-Tangent, Path-Velocity, Log-Curvature, and Acceleration
     df['Path-tangent'] = np.arctan2(df['Y-coordinate'], df['X-coordinate'])
-    df['Path-velocity'] = np.sqrt(df['X-coordinate']**2 + df['Y-coordinate']**2)
-    df['Log-curvature'] = np.log(abs(df['Path-velocity'] / (df['Path-tangent']+small_constant)))
-    df['Acceleration'] = np.sqrt(df['Path-velocity']**2 + (df['Path-velocity'] * df['Path-tangent'])**2)
+    df['Path-velocity'] = np.sqrt(df['X-coordinate']
+                                  ** 2 + df['Y-coordinate']**2)
+    df['Log-curvature'] = np.log(abs(df['Path-velocity'] /
+                                 (df['Path-tangent']+small_constant)))
+    df['Acceleration'] = np.sqrt(
+        df['Path-velocity']**2 + (df['Path-velocity'] * df['Path-tangent'])**2)
 
-    df = df.drop(columns=['Time stamp', 'Button status', 'Azimuth', 'Altitude'])
+    df = df.drop(
+        columns=['Time stamp', 'Button status', 'Azimuth', 'Altitude'])
     return df
+
 
 def read_all_signatures(base_path='Task2'):
     """
@@ -243,6 +247,7 @@ def calculate_average_user(all_signatures):
 
     return user_mean_signatures
 
+
 def perform_dba_on_signatures(mean_signature, signatures):
     """
     Refine the average signature using DTW and the DBA approach with fastdtw.
@@ -272,13 +277,15 @@ def perform_dba_on_signatures(mean_signature, signatures):
             aligned_count[mean_index] += 1
 
     # Compute the new average signature
-    new_mean_signature_np = aligned_sum / aligned_count[:, np.newaxis]  # Normalize by the count
+    new_mean_signature_np = aligned_sum / \
+        aligned_count[:, np.newaxis]  # Normalize by the count
 
     # Convert the numpy array back to a DataFrame
     new_mean_signature = pd.DataFrame(
         new_mean_signature_np, columns=mean_signature.columns)
 
     return new_mean_signature
+
 
 def calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_signatures, threshold):
     correct_classifications = 0
@@ -289,7 +296,8 @@ def calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_sign
     true_negatives = 0
 
     for signature in signatures['genuine']:
-        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+        )
         signature_np = signature.to_numpy()
         distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
         if distance <= threshold:
@@ -301,7 +309,8 @@ def calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_sign
 
     # Test forgery signatures
     for signature in signatures['forgery']:
-        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+        )
         signature_np = signature.to_numpy()
         distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
         if distance > threshold:
@@ -310,15 +319,19 @@ def calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_sign
         else:
             false_positives += 1
         total_classifications += 1
-        
-    accuracy = (correct_classifications / total_classifications) * 100
-    precision = (true_positives / (true_positives + false_positives)) * 100 if (true_positives + false_positives) > 0 else 0
-    recall = (true_positives / (true_positives + false_negatives)) * 100 if (true_positives + false_negatives) > 0 else 0
-    far = (false_positives / (false_positives + true_negatives)) * 100 if (false_positives + true_negatives) > 0 else 0
-    frr = (false_negatives / (false_negatives + true_positives)) * 100 if (false_negatives + true_positives) > 0 else 0
 
-    
+    accuracy = (correct_classifications // total_classifications) * 100
+    precision = (true_positives // (true_positives + false_positives)
+                 ) * 100 
+    recall = (true_positives // (true_positives + false_negatives)) * \
+        100 
+    far = (false_positives // (false_positives + true_negatives)) * \
+        100 
+    frr = (false_negatives // (false_negatives + true_positives)) * \
+        100 
+
     return accuracy, precision, recall, far, frr
+
 
 def eb_dba():
     all_signatures = read_all_signatures()
@@ -338,59 +351,71 @@ def eb_dba():
     for user_key, signatures in all_signatures_copy.items():
         dist_genuine = []
         for signature in signatures['genuine']:
-            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+            )
             signature_np = signature.to_numpy()
-            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+            distance, _ = fastdtw(
+                mean_signature_np, signature_np, dist=euclidean)
             dist_genuine.append(distance)
-        
+
         dist_forgery = []
         for signature in signatures['forgery']:
-            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+            )
             signature_np = signature.to_numpy()
-            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+            distance, _ = fastdtw(
+                mean_signature_np, signature_np, dist=euclidean)
             dist_forgery.append(distance)
-        
-        threshold = (max(dist_genuine) + min(dist_forgery))/2
+
+        threshold = (max(dist_genuine) + min(dist_forgery))//2
         users_thresholds[user_key] = threshold
         thresholds.append(threshold)
+
+    print(f"Thresholds: {users_thresholds}")
+
+    # users_thresholds = {'U1': 7892.638283874616, 'U2': 4348.843165661745, 'U3': 10419.982943516521, 'U4': 14573.672187982142, 'U5': 6374.262620932268, 'U6': 7476.095214649838, 'U7': 18560.454146890428, 'U8': 9629.811775863582, 'U9': 22342.778777464824, 'U10': 5712.5817886872155, 'U11': 5325.949000523202, 'U12': 13155.033628967247, 'U13': 12780.105867056465, 'U14': 17443.161974601135, 'U15': 35961.18268698383, 'U16': 14348.552859782574, 'U17': 32369.986330607964, 'U18': 15242.670991195668, 'U19': 9984.439613145001, 'U20': 6580.081976064588,
+    #                     'U21': 14404.568670274712, 'U22': 14938.839178406552, 'U23': 28374.931627356702, 'U24': 14376.383111331405, 'U25': 12783.756071405585, 'U26': 13684.414069779774, 'U27': 15635.229981986637, 'U28': 13466.172861104133, 'U29': 14840.765858071885, 'U30': 10405.117149850968, 'U31': 11041.322044057504, 'U32': 12474.488379907489, 'U33': 6894.566828933503, 'U34': 7102.362803156393, 'U35': 11180.129939544757, 'U36': 9371.42903063742, 'U37': 6735.721978472242, 'U38': 5141.204814494199, 'U39': 11686.889059567093, 'U40': 8511.665915945405}
 
     far_list = []
     frr_list = []
     user_metrics = {}
     for user_key, signatures in all_signatures_copy.items():
-        accuracy, precision, recall, far, frr = calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_signatures, users_thresholds[user_key])
+        accuracy, precision, recall, far, frr = calculate_accuracy_precision_and_recall(
+            user_key, signatures, user_mean_signatures, users_thresholds[user_key])
         far_list.append(far)
         frr_list.append(frr)
         user_metrics[user_key] = {
-        'accuracy': accuracy,
-        'precision': precision,
-        'recall': recall,
-        'FAR': far,
-        'FRR': frr
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'FAR': far,
+            'FRR': frr
         }
-        print(f"User {user_key}: Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}")
-    
-    total_accuracy = sum(user['accuracy'] for user in user_metrics.values())
-    number_of_users = len(user_metrics)
-    overall_accuracy = total_accuracy / number_of_users 
-    print(f"Overall Accuracy: {overall_accuracy}%")
+        print(
+            f"User {user_key}: Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}")
 
-    far_values = np.array(far_list)
-    frr_values = np.array(frr_list)
-    plt.plot(far_values, frr_values, marker='o')
-    plt.xlabel('FAR')
-    plt.ylabel('FRR')
-    plt.title('FAR vs FRR')
-    index_of_err = np.argmin(np.abs(far_values - frr_values))
-    err_value = far_values[index_of_err]
+    # total_accuracy = sum(user['accuracy'] for user in user_metrics.values())
+    # number_of_users = len(user_metrics)
+    # overall_accuracy = total_accuracy / number_of_users
+    # print(f"Overall Accuracy: {overall_accuracy}%")
 
-    plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
-    plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
+    # far_values = np.array(far_list)
+    # frr_values = np.array(frr_list)
+    # plt.plot(far_values, frr_values, marker='o')
+    # plt.xlabel('FAR')
+    # plt.ylabel('FRR')
+    # plt.title('FAR vs FRR')
+    # index_of_err = np.argmin(np.abs(far_values - frr_values))
+    # err_value = far_values[index_of_err]
 
-    plt.grid(True)
-    plt.show()
+    # plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
+    # plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
+
+    # plt.grid(True)
+    # plt.show()
+
     # Plot FRR vs FAR
-    
+
     # Plotting
     # plt.plot(thresholds, far_list, label='False Acceptance Rate (FAR)')
     # plt.plot(thresholds, frr_list, label='False Rejection Rate (FRR)')
@@ -412,5 +437,6 @@ def eb_dba():
     # plt.show()
 
     # print("Equal Error Rate (EER):", eer)
-            
+
+
 eb_dba()
