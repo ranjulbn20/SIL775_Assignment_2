@@ -249,13 +249,6 @@ def calculate_average_user(all_signatures):
 
 
 def perform_dba_on_signatures(mean_signature, signatures):
-    """
-    Refine the average signature using DTW and the DBA approach with fastdtw.
-
-    :param mean_signature: The initial mean signature to refine.
-    :param signatures: A list of DataFrame signatures to be averaged.
-    :return: The refined average signature as a DataFrame.
-    """
     # Initialize the structure to hold the sum of aligned points for averaging.
     num_params = len(mean_signature.columns)
     aligned_sum = np.zeros((len(mean_signature), num_params))
@@ -346,34 +339,48 @@ def eb_dba():
         # Update the user's mean genuine signature with the refined version.
         user_mean_signatures[user_key]['genuine'] = refined_genuine_mean
 
-    # users_thresholds = {}
-    # thresholds = []
-    # for user_key, signatures in all_signatures_copy.items():
-    #     dist_genuine = []
-    #     for signature in signatures['genuine']:
-    #         mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
-    #         )
-    #         signature_np = signature.to_numpy()
-    #         distance, _ = fastdtw(
-    #             mean_signature_np, signature_np, dist=euclidean)
-    #         dist_genuine.append(distance)
+    users_thresholds = {}
+    thresholds = []
+    for user_key, signatures in all_signatures_copy.items():
+        dist_genuine = []
+        for signature in signatures['genuine']:
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+            )
+            signature_np = signature.to_numpy()
+            distance, _ = fastdtw(
+                mean_signature_np, signature_np, dist=euclidean)
+            dist_genuine.append(distance)
 
-    #     dist_forgery = []
-    #     for signature in signatures['forgery']:
-    #         mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
-    #         )
-    #         signature_np = signature.to_numpy()
-    #         distance, _ = fastdtw(
-    #             mean_signature_np, signature_np, dist=euclidean)
-    #         dist_forgery.append(distance)
+        dist_forgery = []
+        for signature in signatures['forgery']:
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy(
+            )
+            signature_np = signature.to_numpy()
+            distance, _ = fastdtw(
+                mean_signature_np, signature_np, dist=euclidean)
+            dist_forgery.append(distance)
 
-    #     threshold = (max(dist_genuine) + min(dist_forgery))//2
-    #     users_thresholds[user_key] = threshold
-    #     thresholds.append(threshold)
+        threshold = (max(dist_genuine) + min(dist_forgery))//2
+        users_thresholds[user_key] = threshold
+        thresholds.append(threshold)
 
     # print(f"Thresholds: {users_thresholds}")
+        
 
-    users_thresholds = {'U1': 7892.0, 'U2': 4348.0, 'U3': 10000, 'U4': 14573.0, 'U5': 6374.0, 'U6': 7476.0, 'U7': 18560.0, 'U8': 9629.0, 'U9': 22342.0, 'U10': 5712.0, 'U11': 5325.0, 'U12': 13155.0, 'U13': 12780.0, 'U14': 17443.0, 'U15': 35961.0, 'U16': 14348.0, 'U17': 32369.0, 'U18': 15242.0, 'U19': 9984.0, 'U20': 6580.0, 'U21': 14404.0, 'U22': 14938.0, 'U23': 28374.0, 'U24': 14376.0, 'U25': 12783.0, 'U26': 13684.0, 'U27': 15635.0, 'U28': 13466.0, 'U29': 14840.0, 'U30': 10405.0, 'U31': 11041.0, 'U32': 12474.0, 'U33': 6894.0, 'U34': 7102.0, 'U35': 11180.0, 'U36': 9371.0, 'U37': 6735.0, 'U38': 5141.0, 'U39': 11686.0, 'U40': 8511.0}
+    # users_thresholds = {'U1': 7892.0, 'U2': 4348.0, 'U3': 4800, 'U4': 14573.0, 'U5': 6374.0, 'U6': 7476.0, 'U7': 18560.0, 'U8': 9629.0, 'U9': 22342.0, 'U10': 5712.0, 'U11': 5325.0, 'U12': 13155.0, 'U13': 12780.0, 'U14': 17443.0, 'U15': 35961.0, 'U16': 14348.0, 'U17': 32369.0, 'U18': 15242.0, 'U19': 9984.0, 'U20': 6580.0, 'U21': 14404.0, 'U22': 14938.0, 'U23': 28374.0, 'U24': 14376.0, 'U25': 12783.0, 'U26': 13684.0, 'U27': 15635.0, 'U28': 13466.0, 'U29': 14840.0, 'U30': 10405.0, 'U31': 11041.0, 'U32': 12474.0, 'U33': 6894.0, 'U34': 7102.0, 'U35': 11180.0, 'U36': 9371.0, 'U37': 6735.0, 'U38': 5141.0, 'U39': 11686.0, 'U40': 8511.0}
+    
+
+    # accuracy, precision, recall, far, frr = calculate_accuracy_precision_and_recall('U3', all_signatures_copy['U3'], user_mean_signatures, users_thresholds['U3'])    
+    # print(f"Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}")
+
+    # for signature in all_signatures_copy['U3']['forgery']:
+    #     mean_signature_np = user_mean_signatures['U3']['genuine'].to_numpy()
+    #     signature_np = signature.to_numpy()
+    #     distance, _ = fastdtw(
+    #         mean_signature_np, signature_np, dist=euclidean)
+    #     print(distance)
+
+
     far_list = []
     frr_list = []
     user_metrics = {}
@@ -397,20 +404,20 @@ def eb_dba():
     overall_accuracy = total_accuracy / number_of_users
     print(f"Overall Accuracy: {overall_accuracy}%")
 
-    # far_values = np.array(far_list)
-    # frr_values = np.array(frr_list)
-    # plt.plot(far_values, frr_values, marker='o')
-    # plt.xlabel('FAR')
-    # plt.ylabel('FRR')
-    # plt.title('FAR vs FRR')
-    # index_of_err = np.argmin(np.abs(far_values - frr_values))
-    # err_value = far_values[index_of_err]
+    far_values = np.array(far_list)
+    frr_values = np.array(frr_list)
+    plt.plot(far_values, frr_values, marker='o')
+    plt.xlabel('FAR')
+    plt.ylabel('FRR')
+    plt.title('FAR vs FRR')
+    index_of_err = np.argmin(np.abs(far_values - frr_values))
+    err_value = far_values[index_of_err]
 
-    # plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
-    # plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
+    plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
+    plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
 
-    # plt.grid(True)
-    # plt.show()
+    plt.grid(True)
+    plt.show()
 
     # Plot FRR vs FAR
 
