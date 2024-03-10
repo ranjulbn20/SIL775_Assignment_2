@@ -1,9 +1,10 @@
 import os
 import pandas as pd
+import numpy as np
 
 def read_signature_file(file_path):
     """
-    Reads a single signature file and returns its contents as a pandas DataFrame.
+    Reads a single signature file, normalizes the X and Y coordinates, and returns its contents as a pandas DataFrame.
     """
     with open(file_path, 'r') as file:
         # Read the total number of points (the first line)
@@ -18,6 +19,11 @@ def read_signature_file(file_path):
     # Convert the list of points into a DataFrame
     columns = ['X-coordinate', 'Y-coordinate', 'Time stamp', 'Button status', 'Azimuth', 'Altitude', 'Pressure']
     df = pd.DataFrame(points, columns=columns)
+    
+    # Normalize the X and Y coordinates
+    df['X-coordinate'] = (df['X-coordinate'] - df['X-coordinate'].mean()) / (df['X-coordinate'].max() - df['X-coordinate'].min())
+    df['Y-coordinate'] = (df['Y-coordinate'] - df['Y-coordinate'].mean()) / (df['Y-coordinate'].max() - df['Y-coordinate'].min())
+    
     return df
 
 def read_all_signatures(base_path='Task2'):
@@ -51,31 +57,108 @@ def read_all_signatures(base_path='Task2'):
                 
     return all_data
 
-def calculate_mean_coordinates(all_signatures):
+def calculate_average_data_points(all_signatures):
     """
-    Calculates the mean of the X and Y coordinates for each signature.
-    """
-    mean_coordinates = {}
-
-    for user_key, signatures in all_signatures.items():
-        mean_coordinates[user_key] = {'genuine': [], 'forgery': []}
-        
-        for category in ['genuine', 'forgery']:
-            for df in signatures[category]:
-                mean_x = df['X-coordinate'].mean()
-                mean_y = df['Y-coordinate'].mean()
-                mean_coordinates[user_key][category].append((mean_x, mean_y))
+    Calculates the average number of data points for each user's signatures.
     
-    return mean_coordinates
+    :param all_signatures: Nested dictionary containing users' signatures data.
+    :return: Dictionary with user IDs as keys and average number of data points as values.
+    """
+    average_data_points_per_user = {}
+    
+    for user_key, signatures in all_signatures.items():
+        total_data_points = 0
+        total_signatures = 0
+        
+        # Calculate total data points for genuine signatures
+        for df in signatures['genuine']:
+            total_data_points += len(df)
+            total_signatures += 1
+        
+        # Calculate total data points for forgery signatures
+        for df in signatures['forgery']:
+            total_data_points += len(df)
+            total_signatures += 1
+        
+        # Calculate average data points for the user
+        average_data_points = total_data_points / total_signatures
+        average_data_points_per_user[user_key] = average_data_points
+    
+    return average_data_points_per_user
+
+def interpolate_signature(signature_df, target_length):
+    """
+    Interpolates a signature to a given target length.
+    
+    :param signature_df: DataFrame containing the signature to be interpolated.
+    :param target_length: The target length to interpolate the signature to.
+    :return: Interpolated DataFrame of the signature.
+    """
+    # Assuming linear interpolation on the 'X-coordinate' and 'Y-coordinate'
+    # You might need to interpolate other columns depending on your requirements
+    x = np.linspace(0, 1, len(signature_df))
+    x_new = np.linspace(0, 1, target_length)
+    
+    interpolated_data = {}
+    for column in signature_df.columns:
+        y = signature_df[column]
+        y_new = np.interp(x_new, x, y)
+        interpolated_data[column] = y_new
+    
+    return pd.DataFrame(interpolated_data)
+
+def interpolate_all_signatures(all_signatures, average_data_points):
+    """
+    Interpolates all signatures for each user based on the average signature length of that user.
+    
+    :param all_signatures: Nested dictionary containing users' signatures data.
+    :param average_data_points: Dictionary with user IDs as keys and average number of data points as values.
+    """
+    for user_key, signatures in all_signatures.items():
+        target_length = int(average_data_points[user_key])
+        
+        # Interpolate genuine signatures
+        for i, df in enumerate(signatures['genuine']):
+            all_signatures[user_key]['genuine'][i] = interpolate_signature(df, target_length)
+        
+        # Interpolate forgery signatures
+        for i, df in enumerate(signatures['forgery']):
+            all_signatures[user_key]['forgery'][i] = interpolate_signature(df, target_length)
+
+def calculate_average_user(all_signatures):
+    """
+    Calculates the mean of the corresponding rows across all genuine and forgery signatures for each user separately.
+    
+    :param all_signatures: Nested dictionary containing users' signatures data.
+    :return: Dictionary with user IDs as keys. Each key maps to another dictionary with 'genuine' and 'forgery' keys, 
+             where each value is a DataFrame representing the mean signature.
+    """
+    user_mean_signatures = {}
+    
+    for user_key, signatures in all_signatures.items():
+        user_mean_signatures[user_key] = {}
+        
+        for signature_type in ['genuine', 'forgery']:
+            signature_list = signatures[signature_type]
+            
+            # Check if there are signatures to process
+            if signature_list:
+                # Concatenate all signatures with an additional identifier
+                concatenated_df = pd.concat(signature_list, keys=range(len(signature_list)))
+                
+                # Calculate the mean across all signatures for each row
+                mean_signature = concatenated_df.groupby(level=1).mean()
+                
+                # Store the mean signature in the dictionary under the appropriate type
+                user_mean_signatures[user_key][signature_type] = mean_signature
+    
+    return user_mean_signatures
+
 
 def eb_dba():
     all_signatures = read_all_signatures()
-    mean_coordinates = calculate_mean_coordinates(all_signatures)
-    # for user_key, categories in mean_coordinates.items():
-    #     print(f"{user_key}:")
-    #     for category, means in categories.items():
-    #         print(f"  {category}:")
-    #         for mean in means:
-    #             print(f"    Mean X: {mean[0]}, Mean Y: {mean[1]}")
+    average_data_points = calculate_average_data_points(all_signatures)
+    interpolate_all_signatures(all_signatures, average_data_points)
 
+    
 eb_dba()
