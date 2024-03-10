@@ -20,7 +20,7 @@ def read_signature_file(file_path):
     df = pd.DataFrame(points, columns=columns)
     return df
 
-def read_all_signatures(base_path='signatures'):
+def read_all_signatures(base_path='Task2'):
     """
     Reads all signature files for all users and returns a nested dictionary
     with user and signature IDs as keys.
@@ -30,12 +30,12 @@ def read_all_signatures(base_path='signatures'):
 
     # Loop through the user folders
     for user_id in range(1, 41):  # Assuming 40 users
-        user_key = f'USER{user_id}'
+        user_key = f'U{user_id}'
         all_data[user_key] = {'genuine': [], 'forgery': []}
         
         # Read each signature file for the user
         for sig_id in range(1, 41):  # 20 genuine + 20 forgeries
-            file_name = f"{user_key}_{sig_id}.txt"
+            file_name = f"{user_key}S{sig_id}.txt"
             file_path = os.path.join(base_path, file_name)
             
             if os.path.exists(file_path):
@@ -51,9 +51,31 @@ def read_all_signatures(base_path='signatures'):
                 
     return all_data
 
-# Example usage
-all_signatures = read_all_signatures()
+def calculate_mean_coordinates(all_signatures):
+    """
+    Calculates the mean of the X and Y coordinates for each signature.
+    """
+    mean_coordinates = {}
 
-# Accessing the data
-# For example, to get the first genuine signature of USER1:
-print(all_signatures['USER1']['genuine'][0])
+    for user_key, signatures in all_signatures.items():
+        mean_coordinates[user_key] = {'genuine': [], 'forgery': []}
+        
+        for category in ['genuine', 'forgery']:
+            for df in signatures[category]:
+                mean_x = df['X-coordinate'].mean()
+                mean_y = df['Y-coordinate'].mean()
+                mean_coordinates[user_key][category].append((mean_x, mean_y))
+    
+    return mean_coordinates
+
+def eb_dba():
+    all_signatures = read_all_signatures()
+    mean_coordinates = calculate_mean_coordinates(all_signatures)
+    # for user_key, categories in mean_coordinates.items():
+    #     print(f"{user_key}:")
+    #     for category, means in categories.items():
+    #         print(f"  {category}:")
+    #         for mean in means:
+    #             print(f"    Mean X: {mean[0]}, Mean Y: {mean[1]}")
+
+eb_dba()
