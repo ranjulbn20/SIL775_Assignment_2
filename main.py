@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
+import math
 
 def read_signature_file(file_path):
     """
@@ -15,11 +16,30 @@ def read_signature_file(file_path):
         # Read each point and store in a list
         points = []
         for _ in range(total_points):
+            temp = []
             line = file.readline().strip().split()
-            points.append([float(value) for value in line])
-            
+            temp.append([float(value) for value in line])
+
+            # Path-Tangent
+            path_tangent = math.atan(temp[1]/temp[0])
+            temp.append(path_tangent)
+
+            # Path-Velocity
+            path_velocity = (temp[0]**2 + temp[1]**2)**0.5
+            temp.append(path_velocity)
+
+            # Log-curvature
+            log_curvature = math.log(path_velocity/path_tangent)
+            temp.append(log_curvature)
+
+            # Acceleration
+            acceleration = (path_velocity**2 + (path_velocity*path_tangent)**2)**0.5
+            temp.append(acceleration)
+
+            points.append(temp)
+
     # Convert the list of points into a DataFrame
-    columns = ['X-coordinate', 'Y-coordinate', 'Time stamp', 'Button status', 'Azimuth', 'Altitude', 'Pressure']
+    columns = ['X-coordinate', 'Y-coordinate', 'Time stamp', 'Button status', 'Azimuth', 'Altitude', 'Pressure', 'Path-tangent', 'Path-velocity', 'Log-curvature', 'Acceleration']
     df = pd.DataFrame(points, columns=columns)
     
     # Normalize the X and Y coordinates
@@ -203,6 +223,6 @@ def eb_dba():
         user_mean_signatures[user_key]['genuine'] = refined_genuine_mean
 
     print(user_mean_signatures['U1']['genuine'])   
-    #Successfully Done it
+    
 
 eb_dba()
