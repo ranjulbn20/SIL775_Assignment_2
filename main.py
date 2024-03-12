@@ -18,11 +18,15 @@ def read_signature_file(file_path):
         for _ in range(total_points):
             temp = []
             line = file.readline().strip().split()
-            temp.append([float(value) for value in line])
+            temp= [float(value) for value in line]
 
             # Path-Tangent
-            path_tangent = math.atan(temp[1]/temp[0])
+            path_tangent = math.atan(float(temp[1])/float(temp[0]))
             temp.append(path_tangent)
+
+            print(path_tangent)
+            if path_tangent == 0:
+                path_tangent = 0.00000000001
 
             # Path-Velocity
             path_velocity = (temp[0]**2 + temp[1]**2)**0.5
