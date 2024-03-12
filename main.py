@@ -63,7 +63,7 @@ def read_all_signatures(base_path='Task2'):
         
         # Read each signature file for the user
         for sig_id in range(1, 41):  # 20 genuine + 20 forgeries
-            file_name = f"{user_key}S{sig_id}.txt"
+            file_name = f"{user_key}S{sig_id}.TXT"
             file_path = os.path.join(base_path, file_name)
             
             if os.path.exists(file_path):
