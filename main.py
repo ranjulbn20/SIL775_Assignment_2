@@ -4,6 +4,7 @@ import numpy as np
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 import math
+import copy
 
 
 def read_signature_file(file_path):
@@ -229,10 +230,10 @@ def perform_dba_on_signatures(mean_signature, signatures):
 
     return new_mean_signature
 
-
 def eb_dba():
     all_signatures = read_all_signatures()
     average_data_points = calculate_average_data_points(all_signatures)
+    all_signatures_copy = copy.deepcopy(all_signatures)
     interpolate_all_signatures(all_signatures, average_data_points)
     user_mean_signatures = calculate_average_user(all_signatures)
     for user_key, signatures in user_mean_signatures.items():
@@ -242,7 +243,28 @@ def eb_dba():
         # Update the user's mean genuine signature with the refined version.
         user_mean_signatures[user_key]['genuine'] = refined_genuine_mean
 
-    print(user_mean_signatures['U1']['genuine'])
-    print(user_mean_signatures['U2']['genuine'])
+    # Testing with User 1 genuine signatures
+    d = []
+    for signature in all_signatures_copy['U20']['genuine']:
+        # Convert DataFrames to numpy arrays for fastdtw
+        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+        signature_np = signature.to_numpy()
+
+        # Perform fast DTW between the mean_signature and the current signature
+        distance, path = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+        d.append(distance)
+    print("Genuine",d)
+
+    # Testing with User 1 forgery signatures
+    d = []
+    for signature in all_signatures_copy['U20']['forgery']:
+        # Convert DataFrames to numpy arrays for fastdtw
+        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+        signature_np = signature.to_numpy()
+
+        # Perform fast DTW between the mean_signature and the current signature
+        distance, path = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+        d.append(distance)
+    print("Forgery",d)
 
 eb_dba()
