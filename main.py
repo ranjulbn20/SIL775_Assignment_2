@@ -221,8 +221,7 @@ def perform_dba_on_signatures(mean_signature, signatures):
             aligned_count[mean_index] += 1
 
     # Compute the new average signature
-    new_mean_signature_np = aligned_sum / \
-        aligned_count[:, np.newaxis]  # Normalize by the count
+    new_mean_signature_np = aligned_sum / aligned_count[:, np.newaxis]  # Normalize by the count
 
     # Convert the numpy array back to a DataFrame
     new_mean_signature = pd.DataFrame(
