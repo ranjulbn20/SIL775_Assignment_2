@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import numpy as np
+from fastdtw import fastdtw
+from scipy.spatial.distance import euclidean
 
 def read_signature_file(file_path):
     """
@@ -76,9 +78,9 @@ def calculate_average_data_points(all_signatures):
             total_signatures += 1
         
         # Calculate total data points for forgery signatures
-        for df in signatures['forgery']:
-            total_data_points += len(df)
-            total_signatures += 1
+        # for df in signatures['forgery']:
+        #     total_data_points += len(df)
+        #     total_signatures += 1
         
         # Calculate average data points for the user
         average_data_points = total_data_points / total_signatures
@@ -122,8 +124,8 @@ def interpolate_all_signatures(all_signatures, average_data_points):
             all_signatures[user_key]['genuine'][i] = interpolate_signature(df, target_length)
         
         # Interpolate forgery signatures
-        for i, df in enumerate(signatures['forgery']):
-            all_signatures[user_key]['forgery'][i] = interpolate_signature(df, target_length)
+        # for i, df in enumerate(signatures['forgery']):
+        #     all_signatures[user_key]['forgery'][i] = interpolate_signature(df, target_length)
 
 def calculate_average_user(all_signatures):
     """
@@ -154,11 +156,52 @@ def calculate_average_user(all_signatures):
     
     return user_mean_signatures
 
+def perform_dba_on_signatures(mean_signature, signatures):
+    """
+    Refine the average signature using DTW and the DBA approach with fastdtw.
+    
+    :param mean_signature: The initial mean signature to refine.
+    :param signatures: A list of DataFrame signatures to be averaged.
+    :return: The refined average signature as a DataFrame.
+    """
+    # Initialize the structure to hold the sum of aligned points for averaging.
+    num_params = len(mean_signature.columns)
+    aligned_sum = np.zeros((len(mean_signature), num_params))
+    # Counter for the number of points aligned to each index for averaging.
+    aligned_count = np.zeros(len(mean_signature))
+
+    for signature in signatures:
+        # Convert DataFrames to numpy arrays for fastdtw
+        mean_signature_np = mean_signature.to_numpy()
+        signature_np = signature.to_numpy()
+        
+        # Perform fast DTW between the mean_signature and the current signature
+        distance, path = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+        
+        # Traverse the warping path to align and sum the signatures
+        for mean_index, sig_index in path:
+            aligned_sum[mean_index] += signature_np[sig_index]
+            aligned_count[mean_index] += 1
+    
+    # Compute the new average signature
+    new_mean_signature_np = aligned_sum / aligned_count[:, np.newaxis]  # Normalize by the count
+
+    # Convert the numpy array back to a DataFrame
+    new_mean_signature = pd.DataFrame(new_mean_signature_np, columns=mean_signature.columns)
+    
+    return new_mean_signature
 
 def eb_dba():
     all_signatures = read_all_signatures()
     average_data_points = calculate_average_data_points(all_signatures)
     interpolate_all_signatures(all_signatures, average_data_points)
+    user_mean_signatures = calculate_average_user(all_signatures)
+    for user_key, signatures in user_mean_signatures.items():
+        genuine_mean_signature = signatures['genuine']
+        refined_genuine_mean = perform_dba_on_signatures(genuine_mean_signature, all_signatures[user_key]['genuine'])
+        # Update the user's mean genuine signature with the refined version.
+        user_mean_signatures[user_key]['genuine'] = refined_genuine_mean
 
-    
+    print(user_mean_signatures['U1']['genuine'])   
+
 eb_dba()
