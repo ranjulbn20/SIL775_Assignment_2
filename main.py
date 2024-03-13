@@ -50,11 +50,25 @@ def read_signature_file(file_path):
     df = pd.DataFrame(points, columns=columns)
 
     # Normalize the X and Y coordinates
-    df['X-coordinate'] = (df['X-coordinate'] - df['X-coordinate'].mean()) / \
-        (df['X-coordinate'].max() - df['X-coordinate'].min())
-    df['Y-coordinate'] = (df['Y-coordinate'] - df['Y-coordinate'].mean()) / \
-        (df['Y-coordinate'].max() - df['Y-coordinate'].min())
+    for column in columns:
+        df[column] = (df[column] - df[column].mean()) / (df[column].max() - df[column].min())
 
+    # df['X-coordinate'] = (df['X-coordinate'] - df['X-coordinate'].mean()) / \
+    #     (df['X-coordinate'].max() - df['X-coordinate'].min())
+    # df['Y-coordinate'] = (df['Y-coordinate'] - df['Y-coordinate'].mean()) / \
+    #     (df['Y-coordinate'].max() - df['Y-coordinate'].min())
+    # df['Pressure'] = (df['Pressure'] - df['Pressure'].mean()) / \
+    #     (df['Pressure'].max() - df['Pressure'].min())
+    # df['Path-tangent'] = (df['Path-tangent'] - df['Path-tangent'].mean()) / \
+    #     (df['Path-tangent'].max() - df['Path-tangent'].min())
+    # df['Path-velocity'] = (df['Path-velocity'] - df['Path-velocity'].mean()) / \
+    #     (df['Path-velocity'].max() - df['Path-velocity'].min())
+    # df['Log-curvature'] = (df['Log-curvature'] - df['Log-curvature'].mean()) / \
+    #     (df['Log-curvature'].max() - df['Log-curvature'].min())
+    # df['Acceleration'] = (df['Acceleration'] - df['Acceleration'].mean()) / \
+    #     (df['Acceleration'].max() - df['Acceleration'].min())
+
+    df = df.drop(columns=['Time stamp', 'Button status', 'Azimuth', 'Altitude', 'Pressure'])
     return df
 
 
@@ -192,7 +206,6 @@ def calculate_average_user(all_signatures):
 
     return user_mean_signatures
 
-
 def perform_dba_on_signatures(mean_signature, signatures):
     """
     Refine the average signature using DTW and the DBA approach with fastdtw.
@@ -245,7 +258,7 @@ def eb_dba():
 
     # Testing with User 1 genuine signatures
     d = []
-    for signature in all_signatures_copy['U20']['genuine']:
+    for signature in all_signatures_copy['U30']['genuine']:
         # Convert DataFrames to numpy arrays for fastdtw
         mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
         signature_np = signature.to_numpy()
@@ -257,7 +270,7 @@ def eb_dba():
 
     # Testing with User 1 forgery signatures
     d = []
-    for signature in all_signatures_copy['U20']['forgery']:
+    for signature in all_signatures_copy['U1']['forgery']:
         # Convert DataFrames to numpy arrays for fastdtw
         mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
         signature_np = signature.to_numpy()
