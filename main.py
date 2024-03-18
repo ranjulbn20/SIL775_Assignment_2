@@ -7,6 +7,70 @@ import math
 import copy
 
 
+# def read_signature_file(file_path):
+#     """
+#     Reads a single signature file, normalizes the X and Y coordinates, and returns its contents as a pandas DataFrame.
+#     """
+#     with open(file_path, 'r') as file:
+#         # Read the total number of points (the first line)
+#         total_points = int(file.readline().strip())
+
+#         # Read each point and store in a list
+#         points = []
+#         for _ in range(total_points):
+#             temp = []
+#             line = file.readline().strip().split()
+#             temp = [float(value) for value in line]
+
+#             # Path-Tangent
+#             path_tangent = math.atan(float(temp[1])/float(temp[0]))
+#             temp.append(path_tangent)
+
+#             if path_tangent == 0:
+#                 path_tangent = 0.00000000001
+
+#             # Path-Velocity
+#             path_velocity = (temp[0]**2 + temp[1]**2)**0.5
+#             temp.append(path_velocity)
+
+#             # Log-curvature
+#             log_curvature = math.log(path_velocity/path_tangent)
+#             temp.append(log_curvature)
+
+#             # Acceleration
+#             acceleration = (path_velocity**2 +
+#                             (path_velocity*path_tangent)**2)**0.5
+#             temp.append(acceleration)
+
+#             points.append(temp)
+
+#     # Convert the list of points into a DataFrame
+#     columns = ['X-coordinate', 'Y-coordinate', 'Time stamp', 'Button status', 'Azimuth',
+#                'Altitude', 'Pressure', 'Path-tangent', 'Path-velocity', 'Log-curvature', 'Acceleration']
+#     df = pd.DataFrame(points, columns=columns)
+
+#     # Normalize the X and Y coordinates
+#     # for column in columns:
+#     #     df[column] = (df[column] - df[column].mean()) / (df[column].max() - df[column].min())
+
+#     df['X-coordinate'] = (df['X-coordinate'] - df['X-coordinate'].mean()) / \
+#         (df['X-coordinate'].max() - df['X-coordinate'].min())
+#     df['Y-coordinate'] = (df['Y-coordinate'] - df['Y-coordinate'].mean()) / \
+#         (df['Y-coordinate'].max() - df['Y-coordinate'].min())
+#     # df['Pressure'] = (df['Pressure'] - df['Pressure'].mean()) / \
+#     #     (df['Pressure'].max() - df['Pressure'].min())
+#     # df['Path-tangent'] = (df['Path-tangent'] - df['Path-tangent'].mean()) / \
+#     #     (df['Path-tangent'].max() - df['Path-tangent'].min())
+#     # df['Path-velocity'] = (df['Path-velocity'] - df['Path-velocity'].mean()) / \
+#     #     (df['Path-velocity'].max() - df['Path-velocity'].min())
+#     # df['Log-curvature'] = (df['Log-curvature'] - df['Log-curvature'].mean()) / \
+#     #     (df['Log-curvature'].max() - df['Log-curvature'].min())
+#     # df['Acceleration'] = (df['Acceleration'] - df['Acceleration'].mean()) / \
+#     #     (df['Acceleration'].max() - df['Acceleration'].min())
+
+#     df = df.drop(columns=['Time stamp', 'Button status', 'Azimuth', 'Altitude'])
+#     return df
+
 def read_signature_file(file_path):
     """
     Reads a single signature file, normalizes the X and Y coordinates, and returns its contents as a pandas DataFrame.
@@ -18,59 +82,30 @@ def read_signature_file(file_path):
         # Read each point and store in a list
         points = []
         for _ in range(total_points):
-            temp = []
             line = file.readline().strip().split()
             temp = [float(value) for value in line]
-
-            # Path-Tangent
-            path_tangent = math.atan(float(temp[1])/float(temp[0]))
-            temp.append(path_tangent)
-
-            if path_tangent == 0:
-                path_tangent = 0.00000000001
-
-            # Path-Velocity
-            path_velocity = (temp[0]**2 + temp[1]**2)**0.5
-            temp.append(path_velocity)
-
-            # Log-curvature
-            log_curvature = math.log(path_velocity/path_tangent)
-            temp.append(log_curvature)
-
-            # Acceleration
-            acceleration = (path_velocity**2 +
-                            (path_velocity*path_tangent)**2)**0.5
-            temp.append(acceleration)
-
             points.append(temp)
 
     # Convert the list of points into a DataFrame
     columns = ['X-coordinate', 'Y-coordinate', 'Time stamp', 'Button status', 'Azimuth',
-               'Altitude', 'Pressure', 'Path-tangent', 'Path-velocity', 'Log-curvature', 'Acceleration']
+               'Altitude', 'Pressure']
     df = pd.DataFrame(points, columns=columns)
 
     # Normalize the X and Y coordinates
-    for column in columns:
-        df[column] = (df[column] - df[column].mean()) / (df[column].max() - df[column].min())
+    df['X-coordinate'] = (df['X-coordinate'] - df['X-coordinate'].mean()) / \
+        (df['X-coordinate'].max() - df['X-coordinate'].min())
+    df['Y-coordinate'] = (df['Y-coordinate'] - df['Y-coordinate'].mean()) / \
+        (df['Y-coordinate'].max() - df['Y-coordinate'].min())
 
-    # df['X-coordinate'] = (df['X-coordinate'] - df['X-coordinate'].mean()) / \
-    #     (df['X-coordinate'].max() - df['X-coordinate'].min())
-    # df['Y-coordinate'] = (df['Y-coordinate'] - df['Y-coordinate'].mean()) / \
-    #     (df['Y-coordinate'].max() - df['Y-coordinate'].min())
-    # df['Pressure'] = (df['Pressure'] - df['Pressure'].mean()) / \
-    #     (df['Pressure'].max() - df['Pressure'].min())
-    # df['Path-tangent'] = (df['Path-tangent'] - df['Path-tangent'].mean()) / \
-    #     (df['Path-tangent'].max() - df['Path-tangent'].min())
-    # df['Path-velocity'] = (df['Path-velocity'] - df['Path-velocity'].mean()) / \
-    #     (df['Path-velocity'].max() - df['Path-velocity'].min())
-    # df['Log-curvature'] = (df['Log-curvature'] - df['Log-curvature'].mean()) / \
-    #     (df['Log-curvature'].max() - df['Log-curvature'].min())
-    # df['Acceleration'] = (df['Acceleration'] - df['Acceleration'].mean()) / \
-    #     (df['Acceleration'].max() - df['Acceleration'].min())
+    small_constant = 1e-9
+    # Calculate Path-Tangent, Path-Velocity, Log-Curvature, and Acceleration
+    df['Path-tangent'] = np.arctan2(df['Y-coordinate'], df['X-coordinate'])
+    df['Path-velocity'] = np.sqrt(df['X-coordinate']**2 + df['Y-coordinate']**2)
+    df['Log-curvature'] = np.log(abs(df['Path-velocity'] / (df['Path-tangent']+small_constant)))
+    df['Acceleration'] = np.sqrt(df['Path-velocity']**2 + (df['Path-velocity'] * df['Path-tangent'])**2)
 
-    df = df.drop(columns=['Time stamp', 'Button status', 'Azimuth', 'Altitude', 'Pressure'])
+    df = df.drop(columns=['Time stamp', 'Button status', 'Azimuth', 'Altitude'])
     return df
-
 
 def read_all_signatures(base_path='Task2'):
     """
@@ -243,6 +278,48 @@ def perform_dba_on_signatures(mean_signature, signatures):
 
     return new_mean_signature
 
+def calculate_accuracy_precision_and_recall(all_signatures_copy, user_mean_signatures, threshold):
+    correct_classifications = 0
+    total_classifications = 0
+    true_positives = 0
+    false_positives = 0
+    false_negatives = 0
+    true_negatives = 0
+
+    for user_key, signatures in all_signatures_copy.items():
+        # Test genuine signatures
+        for signature in signatures['genuine']:
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+            signature_np = signature.to_numpy()
+            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+            if distance <= threshold:
+                correct_classifications += 1
+                true_positives += 1
+            else:
+                false_negatives += 1
+            total_classifications += 1
+
+        # Test forgery signatures
+        for signature in signatures['forgery']:
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+            signature_np = signature.to_numpy()
+            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+            if distance > threshold:
+                correct_classifications += 1
+                true_negatives += 1
+            else:
+                false_positives += 1
+            total_classifications += 1
+        
+    accuracy = (correct_classifications / total_classifications) * 100
+    precision = (true_positives / (true_positives + false_positives)) * 100 if (true_positives + false_positives) > 0 else 0
+    recall = (true_positives / (true_positives + false_negatives)) * 100 if (true_positives + false_negatives) > 0 else 0
+    far = (false_positives / (false_positives + true_negatives)) * 100 if (false_positives + true_negatives) > 0 else 0
+    frr = (false_negatives / (false_negatives + true_positives)) * 100 if (false_negatives + true_positives) > 0 else 0
+
+    
+    return accuracy, precision, recall
+
 def eb_dba():
     all_signatures = read_all_signatures()
     average_data_points = calculate_average_data_points(all_signatures)
@@ -256,28 +333,29 @@ def eb_dba():
         # Update the user's mean genuine signature with the refined version.
         user_mean_signatures[user_key]['genuine'] = refined_genuine_mean
 
-    # Testing with User 1 genuine signatures
-    d = []
-    for signature in all_signatures_copy['U30']['genuine']:
-        # Convert DataFrames to numpy arrays for fastdtw
-        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
-        signature_np = signature.to_numpy()
+    users_thresholds = []
+    for user_key, signatures in all_signatures_copy.items():
+        dist_genuine = []
+        for signature in signatures['genuine']:
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+            signature_np = signature.to_numpy()
+            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+            dist_genuine.append(distance)
+        
+        dist_forgery = []
+        for signature in signatures['forgery']:
+            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+            signature_np = signature.to_numpy()
+            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+            dist_forgery.append(distance)
+        
+        threshold = (max(dist_genuine) + min(dist_forgery))/2
+        users_thresholds.append(threshold)
 
-        # Perform fast DTW between the mean_signature and the current signature
-        distance, path = fastdtw(mean_signature_np, signature_np, dist=euclidean)
-        d.append(distance)
-    print("Genuine",d)
+    print(users_thresholds)    
+            
+    
+    
 
-    # Testing with User 1 forgery signatures
-    d = []
-    for signature in all_signatures_copy['U1']['forgery']:
-        # Convert DataFrames to numpy arrays for fastdtw
-        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
-        signature_np = signature.to_numpy()
-
-        # Perform fast DTW between the mean_signature and the current signature
-        distance, path = fastdtw(mean_signature_np, signature_np, dist=euclidean)
-        d.append(distance)
-    print("Forgery",d)
 
 eb_dba()
