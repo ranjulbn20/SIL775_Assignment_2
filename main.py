@@ -7,71 +7,6 @@ import math
 import copy
 import matplotlib.pyplot as plt
 
-
-# def read_signature_file(file_path):
-#     """
-#     Reads a single signature file, normalizes the X and Y coordinates, and returns its contents as a pandas DataFrame.
-#     """
-#     with open(file_path, 'r') as file:
-#         # Read the total number of points (the first line)
-#         total_points = int(file.readline().strip())
-
-#         # Read each point and store in a list
-#         points = []
-#         for _ in range(total_points):
-#             temp = []
-#             line = file.readline().strip().split()
-#             temp = [float(value) for value in line]
-
-#             # Path-Tangent
-#             path_tangent = math.atan(float(temp[1])/float(temp[0]))
-#             temp.append(path_tangent)
-
-#             if path_tangent == 0:
-#                 path_tangent = 0.00000000001
-
-#             # Path-Velocity
-#             path_velocity = (temp[0]**2 + temp[1]**2)**0.5
-#             temp.append(path_velocity)
-
-#             # Log-curvature
-#             log_curvature = math.log(path_velocity/path_tangent)
-#             temp.append(log_curvature)
-
-#             # Acceleration
-#             acceleration = (path_velocity**2 +
-#                             (path_velocity*path_tangent)**2)**0.5
-#             temp.append(acceleration)
-
-#             points.append(temp)
-
-#     # Convert the list of points into a DataFrame
-#     columns = ['X-coordinate', 'Y-coordinate', 'Time stamp', 'Button status', 'Azimuth',
-#                'Altitude', 'Pressure', 'Path-tangent', 'Path-velocity', 'Log-curvature', 'Acceleration']
-#     df = pd.DataFrame(points, columns=columns)
-
-#     # Normalize the X and Y coordinates
-#     # for column in columns:
-#     #     df[column] = (df[column] - df[column].mean()) / (df[column].max() - df[column].min())
-
-#     df['X-coordinate'] = (df['X-coordinate'] - df['X-coordinate'].mean()) / \
-#         (df['X-coordinate'].max() - df['X-coordinate'].min())
-#     df['Y-coordinate'] = (df['Y-coordinate'] - df['Y-coordinate'].mean()) / \
-#         (df['Y-coordinate'].max() - df['Y-coordinate'].min())
-#     # df['Pressure'] = (df['Pressure'] - df['Pressure'].mean()) / \
-#     #     (df['Pressure'].max() - df['Pressure'].min())
-#     # df['Path-tangent'] = (df['Path-tangent'] - df['Path-tangent'].mean()) / \
-#     #     (df['Path-tangent'].max() - df['Path-tangent'].min())
-#     # df['Path-velocity'] = (df['Path-velocity'] - df['Path-velocity'].mean()) / \
-#     #     (df['Path-velocity'].max() - df['Path-velocity'].min())
-#     # df['Log-curvature'] = (df['Log-curvature'] - df['Log-curvature'].mean()) / \
-#     #     (df['Log-curvature'].max() - df['Log-curvature'].min())
-#     # df['Acceleration'] = (df['Acceleration'] - df['Acceleration'].mean()) / \
-#     #     (df['Acceleration'].max() - df['Acceleration'].min())
-
-#     df = df.drop(columns=['Time stamp', 'Button status', 'Azimuth', 'Altitude'])
-#     return df
-
 def read_signature_file(file_path):
     """
     Reads a single signature file, normalizes the X and Y coordinates, and returns its contents as a pandas DataFrame.
@@ -114,10 +49,6 @@ def read_signature_file(file_path):
 
 
 def read_all_signatures(base_path='Task2'):
-    """
-    Reads all signature files for all users and returns a nested dictionary
-    with user and signature IDs as keys.
-    """
     # Initialize a dictionary to hold all the data
     all_data = {}
 
@@ -176,15 +107,6 @@ def calculate_average_data_points(all_signatures):
 
 
 def interpolate_signature(signature_df, target_length):
-    """
-    Interpolates a signature to a given target length.
-
-    :param signature_df: DataFrame containing the signature to be interpolated.
-    :param target_length: The target length to interpolate the signature to.
-    :return: Interpolated DataFrame of the signature.
-    """
-    # Assuming linear interpolation on the 'X-coordinate' and 'Y-coordinate'
-    # You might need to interpolate other columns depending on your requirements
     x = np.linspace(0, 1, len(signature_df))
     x_new = np.linspace(0, 1, target_length)
 
@@ -198,12 +120,6 @@ def interpolate_signature(signature_df, target_length):
 
 
 def interpolate_all_signatures(all_signatures, average_data_points):
-    """
-    Interpolates all signatures for each user based on the average signature length of that user.
-
-    :param all_signatures: Nested dictionary containing users' signatures data.
-    :param average_data_points: Dictionary with user IDs as keys and average number of data points as values.
-    """
     for user_key, signatures in all_signatures.items():
         target_length = int(average_data_points[user_key])
 
@@ -218,13 +134,6 @@ def interpolate_all_signatures(all_signatures, average_data_points):
 
 
 def calculate_average_user(all_signatures):
-    """
-    Calculates the mean of the corresponding rows across all genuine and forgery signatures for each user separately.
-
-    :param all_signatures: Nested dictionary containing users' signatures data.
-    :return: Dictionary with user IDs as keys. Each key maps to another dictionary with 'genuine' and 'forgery' keys, 
-             where each value is a DataFrame representing the mean signature.
-    """
     user_mean_signatures = {}
 
     for user_key, signatures in all_signatures.items():
@@ -364,23 +273,6 @@ def eb_dba():
         users_thresholds[user_key] = threshold
         thresholds.append(threshold)
 
-    # print(f"Thresholds: {users_thresholds}")
-        
-
-    # users_thresholds = {'U1': 7892.0, 'U2': 4348.0, 'U3': 4800, 'U4': 14573.0, 'U5': 6374.0, 'U6': 7476.0, 'U7': 18560.0, 'U8': 9629.0, 'U9': 22342.0, 'U10': 5712.0, 'U11': 5325.0, 'U12': 13155.0, 'U13': 12780.0, 'U14': 17443.0, 'U15': 35961.0, 'U16': 14348.0, 'U17': 32369.0, 'U18': 15242.0, 'U19': 9984.0, 'U20': 6580.0, 'U21': 14404.0, 'U22': 14938.0, 'U23': 28374.0, 'U24': 14376.0, 'U25': 12783.0, 'U26': 13684.0, 'U27': 15635.0, 'U28': 13466.0, 'U29': 14840.0, 'U30': 10405.0, 'U31': 11041.0, 'U32': 12474.0, 'U33': 6894.0, 'U34': 7102.0, 'U35': 11180.0, 'U36': 9371.0, 'U37': 6735.0, 'U38': 5141.0, 'U39': 11686.0, 'U40': 8511.0}
-    
-
-    # accuracy, precision, recall, far, frr = calculate_accuracy_precision_and_recall('U3', all_signatures_copy['U3'], user_mean_signatures, users_thresholds['U3'])    
-    # print(f"Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}")
-
-    # for signature in all_signatures_copy['U3']['forgery']:
-    #     mean_signature_np = user_mean_signatures['U3']['genuine'].to_numpy()
-    #     signature_np = signature.to_numpy()
-    #     distance, _ = fastdtw(
-    #         mean_signature_np, signature_np, dist=euclidean)
-    #     print(distance)
-
-
     far_list = []
     frr_list = []
     user_metrics = {}
@@ -400,24 +292,30 @@ def eb_dba():
             f"User {user_key}: Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}")
 
     total_accuracy = sum(user['accuracy'] for user in user_metrics.values())
+    total_precision = sum(user['precision'] for user in user_metrics.values())
+    total_recall = sum(user['recall'] for user in user_metrics.values())
     number_of_users = len(user_metrics)
     overall_accuracy = total_accuracy / number_of_users
+    overall_precision = total_precision / number_of_users
+    overall_recall = total_recall / number_of_users
     print(f"Overall Accuracy: {overall_accuracy}%")
+    print(f"Overall Precision: {overall_precision}%")
+    print(f"Overall Recall: {overall_recall}%")
 
-    far_values = np.array(far_list)
-    frr_values = np.array(frr_list)
-    plt.plot(far_values, frr_values, marker='o')
-    plt.xlabel('FAR')
-    plt.ylabel('FRR')
-    plt.title('FAR vs FRR')
-    index_of_err = np.argmin(np.abs(far_values - frr_values))
-    err_value = far_values[index_of_err]
+    # far_values = np.array(far_list)
+    # frr_values = np.array(frr_list)
+    # plt.plot(far_values, frr_values, marker='o')
+    # plt.xlabel('FAR')
+    # plt.ylabel('FRR')
+    # plt.title('FAR vs FRR')
+    # index_of_err = np.argmin(np.abs(far_values - frr_values))
+    # err_value = far_values[index_of_err]
 
-    plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
-    plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
+    # plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
+    # plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
 
-    plt.grid(True)
-    plt.show()
+    # plt.grid(True)
+    # plt.show()
 
     # Plot FRR vs FAR
 
