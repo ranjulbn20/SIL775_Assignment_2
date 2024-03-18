@@ -8,9 +8,6 @@ import copy
 import matplotlib.pyplot as plt
 
 def read_signature_file(file_path):
-    """
-    Reads a single signature file, normalizes the X and Y coordinates, and returns its contents as a pandas DataFrame.
-    """
     with open(file_path, 'r') as file:
         # Read the total number of points (the first line)
         total_points = int(file.readline().strip())
@@ -77,12 +74,6 @@ def read_all_signatures(base_path='Task2'):
 
 
 def calculate_average_data_points(all_signatures):
-    """
-    Calculates the average number of data points for each user's signatures.
-
-    :param all_signatures: Nested dictionary containing users' signatures data.
-    :return: Dictionary with user IDs as keys and average number of data points as values.
-    """
     average_data_points_per_user = {}
 
     for user_key, signatures in all_signatures.items():
@@ -276,70 +267,34 @@ def eb_dba():
     far_list = []
     frr_list = []
     user_metrics = {}
-    for user_key, signatures in all_signatures_copy.items():
-        accuracy, precision, recall, far, frr = calculate_accuracy_precision_and_recall(
-            user_key, signatures, user_mean_signatures, users_thresholds[user_key])
-        far_list.append(far)
-        frr_list.append(frr)
-        user_metrics[user_key] = {
-            'accuracy': accuracy,
-            'precision': precision,
-            'recall': recall,
-            'FAR': far,
-            'FRR': frr
-        }
-        print(
-            f"User {user_key}: Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}")
+    with open('output.txt', 'w') as file:
+        for user_key, signatures in all_signatures_copy.items():
+            accuracy, precision, recall, far, frr = calculate_accuracy_precision_and_recall(
+                user_key, signatures, user_mean_signatures, users_thresholds[user_key])
+            far_list.append(far)
+            frr_list.append(frr)
+            user_metrics[user_key] = {
+                'accuracy': accuracy,
+                'precision': precision,
+                'recall': recall,
+                'FAR': far,
+                'FRR': frr
+            }
+            print(
+                f"User {user_key}: Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}",
+                file=file)
 
-    total_accuracy = sum(user['accuracy'] for user in user_metrics.values())
-    total_precision = sum(user['precision'] for user in user_metrics.values())
-    total_recall = sum(user['recall'] for user in user_metrics.values())
-    number_of_users = len(user_metrics)
-    overall_accuracy = total_accuracy / number_of_users
-    overall_precision = total_precision / number_of_users
-    overall_recall = total_recall / number_of_users
-    print(f"Overall Accuracy: {overall_accuracy}%")
-    print(f"Overall Precision: {overall_precision}%")
-    print(f"Overall Recall: {overall_recall}%")
-
-    # far_values = np.array(far_list)
-    # frr_values = np.array(frr_list)
-    # plt.plot(far_values, frr_values, marker='o')
-    # plt.xlabel('FAR')
-    # plt.ylabel('FRR')
-    # plt.title('FAR vs FRR')
-    # index_of_err = np.argmin(np.abs(far_values - frr_values))
-    # err_value = far_values[index_of_err]
-
-    # plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
-    # plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
-
-    # plt.grid(True)
-    # plt.show()
-
-    # Plot FRR vs FAR
-
-    # Plotting
-    # plt.plot(thresholds, far_list, label='False Acceptance Rate (FAR)')
-    # plt.plot(thresholds, frr_list, label='False Rejection Rate (FRR)')
-    # plt.xlabel('Threshold')
-    # plt.ylabel('Error Rate')
-    # plt.title('Error Rate vs. Threshold')
-    # plt.legend()
-
-    # eer_index = min(range(len(far_list)), key=lambda i: abs(far_list[i] - frr_list[i]))
-    # eer_threshold = thresholds[eer_index]
-    # eer = (far_list[eer_index] + frr_list[eer_index]) / 2
-    # plt.plot(eer_threshold, eer, 'ro', label='EER')
-
-    # # Plotting EER line
-    # plt.axvline(eer_threshold, color='r', linestyle='--', label='EER Threshold')
-
-    # # Show plot
-    # plt.legend()
-    # plt.show()
-
-    # print("Equal Error Rate (EER):", eer)
+        total_accuracy = sum(user['accuracy'] for user in user_metrics.values())
+        total_precision = sum(user['precision'] for user in user_metrics.values())
+        total_recall = sum(user['recall'] for user in user_metrics.values())
+        number_of_users = len(user_metrics)
+        overall_accuracy = total_accuracy / number_of_users
+        overall_precision = total_precision / number_of_users
+        overall_recall = total_recall / number_of_users
+        print(f"Overall Accuracy: {overall_accuracy}%", file=file)
+        print(f"Overall Precision: {overall_precision}%", file=file)
+        print(f"Overall Recall: {overall_recall}%", file=file)
+    
 
 
 eb_dba()

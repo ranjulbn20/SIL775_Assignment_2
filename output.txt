@@ -1,0 +1,43 @@
+User U1: Accuracy = 82.5, Precision = 84.21052631578947, Recall = 80.0, FAR = 15.0, FRR = 20.0
+User U2: Accuracy = 85.0, Precision = 81.81818181818183, Recall = 90.0, FAR = 20.0, FRR = 10.0
+User U3: Accuracy = 55.00000000000001, Precision = 54.166666666666664, Recall = 65.0, FAR = 55.00000000000001, FRR = 35.0
+User U4: Accuracy = 55.00000000000001, Precision = 54.166666666666664, Recall = 65.0, FAR = 55.00000000000001, FRR = 35.0
+User U5: Accuracy = 95.0, Precision = 95.0, Recall = 95.0, FAR = 5.0, FRR = 5.0
+User U6: Accuracy = 90.0, Precision = 90.0, Recall = 90.0, FAR = 10.0, FRR = 10.0
+User U7: Accuracy = 65.0, Precision = 61.53846153846154, Recall = 80.0, FAR = 50.0, FRR = 20.0
+User U8: Accuracy = 82.5, Precision = 84.21052631578947, Recall = 80.0, FAR = 15.0, FRR = 20.0
+User U9: Accuracy = 95.0, Precision = 95.0, Recall = 95.0, FAR = 5.0, FRR = 5.0
+User U10: Accuracy = 85.0, Precision = 85.0, Recall = 85.0, FAR = 15.0, FRR = 15.0
+User U11: Accuracy = 45.0, Precision = 43.75, Recall = 35.0, FAR = 45.0, FRR = 65.0
+User U12: Accuracy = 87.5, Precision = 94.11764705882352, Recall = 80.0, FAR = 5.0, FRR = 20.0
+User U13: Accuracy = 92.5, Precision = 90.47619047619048, Recall = 95.0, FAR = 10.0, FRR = 5.0
+User U14: Accuracy = 87.5, Precision = 85.71428571428571, Recall = 90.0, FAR = 15.0, FRR = 10.0
+User U15: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U16: Accuracy = 82.5, Precision = 84.21052631578947, Recall = 80.0, FAR = 15.0, FRR = 20.0
+User U17: Accuracy = 92.5, Precision = 90.47619047619048, Recall = 95.0, FAR = 10.0, FRR = 5.0
+User U18: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U19: Accuracy = 92.5, Precision = 94.73684210526315, Recall = 90.0, FAR = 5.0, FRR = 10.0
+User U20: Accuracy = 95.0, Precision = 95.0, Recall = 95.0, FAR = 5.0, FRR = 5.0
+User U21: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U22: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U23: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U24: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U25: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U26: Accuracy = 85.0, Precision = 81.81818181818183, Recall = 90.0, FAR = 20.0, FRR = 10.0
+User U27: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U28: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U29: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U30: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U31: Accuracy = 92.5, Precision = 94.73684210526315, Recall = 90.0, FAR = 5.0, FRR = 10.0
+User U32: Accuracy = 70.0, Precision = 66.66666666666666, Recall = 80.0, FAR = 40.0, FRR = 20.0
+User U33: Accuracy = 85.0, Precision = 85.0, Recall = 85.0, FAR = 15.0, FRR = 15.0
+User U34: Accuracy = 80.0, Precision = 77.27272727272727, Recall = 85.0, FAR = 25.0, FRR = 15.0
+User U35: Accuracy = 67.5, Precision = 62.96296296296296, Recall = 85.0, FAR = 50.0, FRR = 15.0
+User U36: Accuracy = 65.0, Precision = 61.53846153846154, Recall = 80.0, FAR = 50.0, FRR = 20.0
+User U37: Accuracy = 72.5, Precision = 65.51724137931035, Recall = 95.0, FAR = 50.0, FRR = 5.0
+User U38: Accuracy = 82.5, Precision = 84.21052631578947, Recall = 80.0, FAR = 15.0, FRR = 20.0
+User U39: Accuracy = 100.0, Precision = 100.0, Recall = 100.0, FAR = 0.0, FRR = 0.0
+User U40: Accuracy = 92.5, Precision = 90.47619047619048, Recall = 95.0, FAR = 10.0, FRR = 5.0
+Overall Accuracy: 86.4375%
+Overall Precision: 85.8448128000913%
+Overall Recall: 88.75%
