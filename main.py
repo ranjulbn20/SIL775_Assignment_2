@@ -5,6 +5,8 @@ from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 import math
 import copy
+import matplotlib.pyplot as plt
+
 
 
 # def read_signature_file(file_path):
@@ -278,7 +280,7 @@ def perform_dba_on_signatures(mean_signature, signatures):
 
     return new_mean_signature
 
-def calculate_accuracy_precision_and_recall(all_signatures_copy, user_mean_signatures, threshold):
+def calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_signatures, threshold):
     correct_classifications = 0
     total_classifications = 0
     true_positives = 0
@@ -286,30 +288,28 @@ def calculate_accuracy_precision_and_recall(all_signatures_copy, user_mean_signa
     false_negatives = 0
     true_negatives = 0
 
-    for user_key, signatures in all_signatures_copy.items():
-        # Test genuine signatures
-        for signature in signatures['genuine']:
-            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
-            signature_np = signature.to_numpy()
-            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
-            if distance <= threshold:
-                correct_classifications += 1
-                true_positives += 1
-            else:
-                false_negatives += 1
-            total_classifications += 1
+    for signature in signatures['genuine']:
+        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+        signature_np = signature.to_numpy()
+        distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+        if distance <= threshold:
+            correct_classifications += 1
+            true_positives += 1
+        else:
+            false_negatives += 1
+        total_classifications += 1
 
-        # Test forgery signatures
-        for signature in signatures['forgery']:
-            mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
-            signature_np = signature.to_numpy()
-            distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
-            if distance > threshold:
-                correct_classifications += 1
-                true_negatives += 1
-            else:
-                false_positives += 1
-            total_classifications += 1
+    # Test forgery signatures
+    for signature in signatures['forgery']:
+        mean_signature_np = user_mean_signatures[user_key]['genuine'].to_numpy()
+        signature_np = signature.to_numpy()
+        distance, _ = fastdtw(mean_signature_np, signature_np, dist=euclidean)
+        if distance > threshold:
+            correct_classifications += 1
+            true_negatives += 1
+        else:
+            false_positives += 1
+        total_classifications += 1
         
     accuracy = (correct_classifications / total_classifications) * 100
     precision = (true_positives / (true_positives + false_positives)) * 100 if (true_positives + false_positives) > 0 else 0
@@ -318,7 +318,7 @@ def calculate_accuracy_precision_and_recall(all_signatures_copy, user_mean_signa
     frr = (false_negatives / (false_negatives + true_positives)) * 100 if (false_negatives + true_positives) > 0 else 0
 
     
-    return accuracy, precision, recall
+    return accuracy, precision, recall, far, frr
 
 def eb_dba():
     all_signatures = read_all_signatures()
@@ -333,7 +333,8 @@ def eb_dba():
         # Update the user's mean genuine signature with the refined version.
         user_mean_signatures[user_key]['genuine'] = refined_genuine_mean
 
-    users_thresholds = []
+    users_thresholds = {}
+    thresholds = []
     for user_key, signatures in all_signatures_copy.items():
         dist_genuine = []
         for signature in signatures['genuine']:
@@ -350,12 +351,66 @@ def eb_dba():
             dist_forgery.append(distance)
         
         threshold = (max(dist_genuine) + min(dist_forgery))/2
-        users_thresholds.append(threshold)
+        users_thresholds[user_key] = threshold
+        thresholds.append(threshold)
 
-    print(users_thresholds)    
+    far_list = []
+    frr_list = []
+    user_metrics = {}
+    for user_key, signatures in all_signatures_copy.items():
+        accuracy, precision, recall, far, frr = calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_signatures, users_thresholds[user_key])
+        far_list.append(far)
+        frr_list.append(frr)
+        user_metrics[user_key] = {
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'FAR': far,
+        'FRR': frr
+        }
+        print(f"User {user_key}: Accuracy = {accuracy}, Precision = {precision}, Recall = {recall}, FAR = {far}, FRR = {frr}")
+    
+    total_accuracy = sum(user['accuracy'] for user in user_metrics.values())
+    number_of_users = len(user_metrics)
+    overall_accuracy = total_accuracy / number_of_users 
+    print(f"Overall Accuracy: {overall_accuracy}%")
+
+    far_values = np.array(far_list)
+    frr_values = np.array(frr_list)
+    plt.plot(far_values, frr_values, marker='o')
+    plt.xlabel('FAR')
+    plt.ylabel('FRR')
+    plt.title('FAR vs FRR')
+    index_of_err = np.argmin(np.abs(far_values - frr_values))
+    err_value = far_values[index_of_err]
+
+    plt.plot(far_values[index_of_err], frr_values[index_of_err], 'ro')  # Mark the ERR point in red
+    plt.annotate(f'ERR\n({err_value})', (far_values[index_of_err], frr_values[index_of_err]))
+
+    plt.grid(True)
+    plt.show()
+    # Plot FRR vs FAR
+    
+    # Plotting
+    # plt.plot(thresholds, far_list, label='False Acceptance Rate (FAR)')
+    # plt.plot(thresholds, frr_list, label='False Rejection Rate (FRR)')
+    # plt.xlabel('Threshold')
+    # plt.ylabel('Error Rate')
+    # plt.title('Error Rate vs. Threshold')
+    # plt.legend()
+
+    # eer_index = min(range(len(far_list)), key=lambda i: abs(far_list[i] - frr_list[i]))
+    # eer_threshold = thresholds[eer_index]
+    # eer = (far_list[eer_index] + frr_list[eer_index]) / 2
+    # plt.plot(eer_threshold, eer, 'ro', label='EER')
+
+    # # Plotting EER line
+    # plt.axvline(eer_threshold, color='r', linestyle='--', label='EER Threshold')
+
+    # # Show plot
+    # plt.legend()
+    # plt.show()
+
+    # print("Equal Error Rate (EER):", eer)
             
-    
-    
-
-
 eb_dba()
