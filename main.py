@@ -225,6 +225,56 @@ def calculate_accuracy_precision_and_recall(user_key, signatures, user_mean_sign
 
     return accuracy, precision, recall, far, frr
 
+# def calculate_err_for_user(user_key, signatures, user_mean_signatures, threshold):
+#     threshold_values = np.linspace(start=0.5*threshold, stop=1.5*threshold, num=100)  # Adjust the range and granularity as needed
+#     min_difference = float('inf')
+#     optimal_threshold = None
+#     optimal_far = None
+#     optimal_frr = None
+
+#     for threshold in threshold_values:
+#         _, _, _, far, frr = calculate_accuracy_precision_and_recall(
+#             user_key, signatures, user_mean_signatures, threshold)
+        
+#         # Calculate the absolute difference between FAR and FRR
+#         difference = abs(far - frr)
+        
+#         # Update the optimal values if the current difference is smaller
+#         if difference < min_difference:
+#             min_difference = difference
+#             optimal_threshold = threshold
+#             optimal_far = far
+#             optimal_frr = frr
+
+#     # ERR is achieved when FAR and FRR are equal, or the difference is minimal
+#     print(f"Optimal Threshold: {optimal_threshold}, ERR (FAR ≈ FRR): {optimal_far} ≈ {optimal_frr}")
+
+def calculate_err_for_user_and_plot(user_key, signatures, user_mean_signatures, threshold):
+    threshold_values = np.linspace(start=0.5*threshold, stop=1.5*threshold, num=500)
+    far_values = []
+    frr_values = []
+
+    for threshold in threshold_values:
+        _, _, _, far, frr = calculate_accuracy_precision_and_recall(
+            user_key, signatures, user_mean_signatures, threshold)
+        far_values.append(far)
+        frr_values.append(frr)
+
+    index_of_eer = np.argmin(np.abs(np.subtract(far_values, frr_values)))
+    eer_threshold = threshold_values[index_of_eer]
+    eer_value = (far_values[index_of_eer] + frr_values[index_of_eer]) / 2
+    print(f"EER Threshold: {eer_threshold}, EER Value: {eer_value}%")
+
+    # Plotting the graph
+    plt.figure(figsize=(10, 6))
+    plt.plot(threshold_values, far_values, label='FAR')
+    plt.plot(threshold_values, frr_values, label='FRR')
+    plt.xlabel('Threshold')
+    plt.ylabel('Error Rate (%)')
+    plt.title('EER vs Thresholds')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 def eb_dba():
     all_signatures = read_all_signatures()
@@ -294,6 +344,9 @@ def eb_dba():
         print(f"Overall Accuracy: {overall_accuracy}%", file=file)
         print(f"Overall Precision: {overall_precision}%", file=file)
         print(f"Overall Recall: {overall_recall}%", file=file)
+    
+    user_key = 'U1'
+    calculate_err_for_user_and_plot(user_key, all_signatures_copy[user_key], user_mean_signatures, users_thresholds[user_key])
     
 
 
